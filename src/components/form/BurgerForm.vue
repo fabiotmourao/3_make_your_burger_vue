@@ -18,7 +18,7 @@
           <label for="pao">Escolha o tipo de pão:</label>
           <select name="pao" id="pao" v-model="pao">
             <option value="">Selecione o seu pão</option>
-            <option v-for="pao in paes" :key="pao.id" :value="pao.tipo"> {{ pao.tipo}}</option>
+            <option v-for="pao in paes" :key="pao.id" :value="pao.tipo"> {{ pao.tipo }}</option>
           </select>
         </div>
 
@@ -78,6 +78,12 @@ export default {
       
       e.preventDefault();
 
+      if (!this.nome || !this.pao || !this.carne) {
+        this.msg = 'Por favor, preencha todos os campos obrigatórios.';
+        setTimeout(() => (this.msg = ''), 3000);
+        return; 
+      }
+
       const data = {
         nome: this.nome,
         carne: this.carne,
@@ -96,7 +102,6 @@ export default {
 
       const res = await req.json();
 
-      // msg de sistema
       this.msg = `Seu Pedido Nº ${res.id} realizado com sucesso!`;
 
       setTimeout(() => this.msg = "", 3000);
