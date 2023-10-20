@@ -1,7 +1,6 @@
 <template>
   <div>
-    <MessageSucsses :msg="msg" v-show="msg"/>
-    <div>
+    <Message :msg="msg" :msgType="msgType" v-show="msg" />    <div>
       <form class="burger-form" @submit="createBurger">
         <div class="input-container">
           <label for="nome">Nome do cliente</label>
@@ -47,12 +46,12 @@
 </template>
 
 <script>
-import MessageSucsses from '../messages/MessageSucsses.vue';
+import Message from '../messages/Message.vue';
 
 export default {
   name: "BurgerForm",
   data() {
-    return{
+    return {
       paes: null,
       carnes: null,
       opcionaisdata: null,
@@ -60,8 +59,8 @@ export default {
       pao: null,
       carne: null,
       opcionais: [],
-      msg: null
-    }
+      msgType: "",
+    };
   },
 
   methods: {
@@ -75,13 +74,11 @@ export default {
     },
 
     async createBurger(e) {
-      
       e.preventDefault();
 
       if (!this.nome || !this.pao || !this.carne) {
-        this.msg = 'Por favor, preencha todos os campos obrigatórios.';
-        setTimeout(() => (this.msg = ''), 3000);
-        return; 
+        this.showMessage('Por favor, preencha todos os campos obrigatórios.', 'danger');
+        return;
       }
 
       const data = {
@@ -90,30 +87,43 @@ export default {
         pao: this.pao,
         opcionais: Array.from(this.opcionais),
         status: "Solicitado",
-      }
+      };
 
       const dataJson = JSON.stringify(data);
 
-      const req = await fetch("http://localhost:3000/burgers", {
-        method: "POST",
-        headers: { "Content-type":"application/json" },
-        body: dataJson
-      });
+      try {
+        const req = await fetch("http://localhost:3000/burgers", {
+          method: "POST",
+          headers: { "Content-type": "application/json" },
+          body: dataJson,
+        });
 
-      const res = await req.json();
+        if (req.ok) {
+          const res = await req.json();
+          this.showMessage(`Seu Pedido Nº ${res.id} realizado com sucesso!`, 'success');
+          this.clearForm();
+        } else {
+          this.showMessage("Ocorreu um erro ao criar o pedido. Por favor, tente novamente.", 'danger');
+        }
+      } catch (error) {
+        this.showMessage("Ocorreu um erro ao criar o pedido. Por favor, tente novamente.", 'danger');
+      }
+    },
 
-      this.msg = `Seu Pedido Nº ${res.id} realizado com sucesso!`;
-
-      setTimeout(() => this.msg = "", 3000);
-
-      this.clearForm();
+    showMessage(message, type) {
+      this.msg = message;
+      this.msgType = type;
+      setTimeout(() => {
+        this.msg = '';
+        this.msgType = '';
+      }, 3000);
     },
 
     clearForm() {
-        this.nome = null;
-        this.carne = null;
-        this.pao = null;
-        this.opcionais = [];
+      this.nome = null;
+      this.carne = null;
+      this.pao = null;
+      this.opcionais = [];
     },
   },
 
@@ -122,10 +132,11 @@ export default {
   },
 
   components: {
-    MessageSucsses
-  }
+    Message,
+  },
 };
 </script>
+
 
 <style scoped>
     .burger-form {      
